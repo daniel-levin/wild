@@ -143,6 +143,7 @@ use std::process::Command;
 use std::process::ExitStatus;
 use std::process::Stdio;
 use std::str::FromStr;
+use std::sync::LazyLock;
 use std::sync::Once;
 use std::sync::OnceLock;
 use std::time::Duration;
@@ -2373,19 +2374,19 @@ fn should_print_timing() -> bool {
     *VALUE.get_or_init(|| std::env::var("WILD_TEST_PRINT_TIMING").is_ok())
 }
 
-fn available_linkers() -> Result<Vec<Linker>> {
+static LINKERS: LazyLock<Vec<Linker>> = LazyLock::new(|| {
     let mut linkers = vec![
         Linker::ThirdParty(ThirdPartyLinker {
             name: "ld",
             gcc_name: "bfd",
-            path: find_bin(&["ld.bfd", "ld"])?,
+            path: find_bin(&["ld.bfd", "ld"]).expect("to find bfd"),
             cross_paths: find_cross_paths("ld"),
             enabled_by_default: true,
         }),
         Linker::ThirdParty(ThirdPartyLinker {
             name: "lld",
             gcc_name: "lld",
-            path: find_bin(&["ld.lld"])?,
+            path: find_bin(&["ld.lld"]).expect("to find lld"),
             cross_paths: find_cross_paths("ld.lld"),
             enabled_by_default: false,
         }),
@@ -2414,8 +2415,8 @@ fn available_linkers() -> Result<Vec<Linker>> {
 
     linkers.push(Linker::Wild);
 
-    Ok(linkers)
-}
+    linkers
+});
 
 fn run_with_config(
     program_inputs: &ProgramInputs,
@@ -2567,8 +2568,6 @@ fn integration_test(
 ) -> Result {
     let program_inputs = ProgramInputs::new(program_name)?;
 
-    let linkers = available_linkers()?;
-
     let test_config = read_test_config()?;
 
     let filename = &program_inputs.source_file;
@@ -2591,7 +2590,7 @@ fn integration_test(
 
             let mut config = config.clone();
             config.rustc_channel = test_config.rustc_channel;
-            run_with_config(&program_inputs, &config, arch, &linkers)?
+            run_with_config(&program_inputs, &config, arch, &LINKERS)?
         }
     }
 
