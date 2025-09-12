@@ -164,23 +164,25 @@ fn build_dir() -> PathBuf {
     std::env::var("WILD_TEST_BUILD_DIR").map_or(base_dir().join("tests/build"), PathBuf::from)
 }
 
+#[derive(Debug)]
 struct ProgramInputs {
     source_file: &'static str,
 }
 
+#[derive(Debug)]
 struct Program<'a> {
     link_output: LinkOutput,
     assertions: &'a Assertions,
     shared_objects: Vec<LinkerInput>,
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Linker {
     Wild,
     ThirdParty(ThirdPartyLinker),
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct ThirdPartyLinker {
     name: &'static str,
     gcc_name: &'static str,
@@ -262,12 +264,14 @@ fn wild_path() -> &'static Path {
     Path::new(env!("CARGO_BIN_EXE_wild"))
 }
 
+#[derive(Debug)]
 struct LinkOutput {
     binary: PathBuf,
     command: LinkCommand,
     linker_used: Linker,
 }
 
+#[derive(Debug)]
 struct LinkCommand {
     command: Command,
     input_commands: Vec<LinkCommand>,
@@ -585,7 +589,7 @@ struct Dep {
     template: Option<Vec<String>>,
 }
 
-#[derive(Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 struct Assertions {
     expected_symtab_entries: Vec<ExpectedSymtabEntry>,
     expected_dynsym_entries: Vec<ExpectedSymtabEntry>,
@@ -595,7 +599,7 @@ struct Assertions {
     contains_strings: Vec<String>,
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct ExpectedSymtabEntry {
     name: String,
     section_name: Option<String>,
@@ -1108,7 +1112,7 @@ impl Display for Config {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct LinkerInput {
     prefix_arg: Option<&'static str>,
     path: PathBuf,
