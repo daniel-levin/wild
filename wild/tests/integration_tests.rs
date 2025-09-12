@@ -383,7 +383,7 @@ fn get_dynamic_linker(path: impl AsRef<Path>) -> Option<String> {
 }
 
 #[allow(unreachable_code)]
-fn get_host_architecture() -> Architecture {
+const fn get_host_architecture() -> Architecture {
     #[cfg(target_arch = "x86_64")]
     {
         return Architecture::X86_64;
