@@ -2515,6 +2515,7 @@ fn integration_test(
         "local_symbol_refs.s",
         "archive_activation.c",
         "exclude-libs.c",
+        "exclude-section.s",
         "common_section.c",
         "string_merging.c",
         "string-merge-missing-null.c",
