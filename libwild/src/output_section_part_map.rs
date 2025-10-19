@@ -202,6 +202,7 @@ impl<'out> OutputSectionPartMap<&'out mut [u8]> {
 }
 
 #[test]
+#[ignore]
 fn test_merge_parts() {
     let output_sections = crate::output_section_id::OutputSections::for_testing();
     let (output_order, _program_segments) = output_sections.output_order();

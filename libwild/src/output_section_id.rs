@@ -92,6 +92,7 @@ pub(crate) const NOTE_GNU_PROPERTY: OutputSectionId =
     part_id::NOTE_GNU_PROPERTY.output_section_id();
 pub(crate) const NOTE_GNU_BUILD_ID: OutputSectionId =
     part_id::NOTE_GNU_BUILD_ID.output_section_id();
+pub(crate) const GDB_INDEX: OutputSectionId = part_id::GDB_INDEX.output_section_id();
 
 pub(crate) const SYMTAB_LOCAL: OutputSectionId = part_id::SYMTAB_LOCAL.output_section_id();
 pub(crate) const SYMTAB_GLOBAL: OutputSectionId = part_id::SYMTAB_GLOBAL.output_section_id();
@@ -594,6 +595,11 @@ const SECTION_DEFINITIONS: [BuiltInSectionDetails; NUM_BUILT_IN_SECTIONS] = [
         kind: SectionKind::Primary(SectionName(RISCV_ATTRIBUTES_SECTION_NAME)),
         ty: sht::RISCV_ATTRIBUTES,
         target_segment_type: Some(pt::RISCV_ATTRIBUTES),
+        ..DEFAULT_DEFS
+    },
+    BuiltInSectionDetails {
+        kind: SectionKind::Primary(SectionName(GDB_INDEX_SECTION_NAME)),
+        ty: sht::PROGBITS,
         ..DEFAULT_DEFS
     },
     // Start of regular sections
@@ -1235,6 +1241,7 @@ fn test_constant_ids() {
         (RELA_DYN_RELATIVE, RELA_DYN_SECTION_NAME),
         (RELA_DYN_GENERAL, &[]),
         (RISCV_ATTRIBUTES, RISCV_ATTRIBUTES_SECTION_NAME),
+        (GDB_INDEX, GDB_INDEX_SECTION_NAME),
         (GCC_EXCEPT_TABLE, GCC_EXCEPT_TABLE_SECTION_NAME),
         (INTERP, INTERP_SECTION_NAME),
         (GNU_VERSION, GNU_VERSION_SECTION_NAME),
