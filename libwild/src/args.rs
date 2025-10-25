@@ -118,6 +118,8 @@ pub struct Args {
     string_merging_threads: Option<NonZeroUsize>,
 
     jobserver_client: Option<Client>,
+
+    pub(crate) generate_gdb_index: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -377,6 +379,7 @@ impl Default for Args {
             allow_multiple_definitions: false,
             z_interpose: false,
             string_merging_threads: None,
+            generate_gdb_index: false,
         }
     }
 }
@@ -2254,6 +2257,15 @@ fn setup_argument_parser() -> ArgumentParser {
         .help("Treat unresolved symbols as warnings")
         .execute(|args, _modifier_stack| {
             args.error_unresolved_symbols = false;
+            Ok(())
+        });
+
+    parser
+        .declare()
+        .long("gdb-index")
+        .help("Generate a .gdb-index section")
+        .execute(|args, _modifier_stack| {
+            args.generate_gdb_index = true;
             Ok(())
         });
 
