@@ -114,8 +114,9 @@ struct StringMergeInputSection<'data> {
 }
 
 /// A string from a string-merge section. Includes the null terminator.
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, derive_more::Debug)]
 pub(crate) struct MergeString<'data> {
+    #[debug("{}", String::from_utf8_lossy(bytes))]
     bytes: &'data [u8],
 }
 

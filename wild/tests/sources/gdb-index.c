@@ -11,7 +11,7 @@
 //#Contains:gdb_index
 
 //#Compiler: clang
-//#CompArgs:-ggdb
+//#CompArgs:-ggdb -gdwarf-4
 //#LinkerDriver:clang
 //#LinkArgs:-z now -Wl,--gdb-index
 //#SkipLinker:ld

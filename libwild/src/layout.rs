@@ -3343,6 +3343,13 @@ impl<'data> PreludeLayoutState<'data> {
             }
         }
 
+        for (osid, info) in output_sections.ids_with_info() {
+            if *keep_sections.get(osid) {
+            } else {
+                tracing::trace!("discarding section {:#?}", info);
+            }
+        }
+
         let num_sections = keep_sections.values_iter().filter(|p| **p).count();
 
         // Compute output indexes of each section.
