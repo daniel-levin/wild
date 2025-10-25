@@ -2926,7 +2926,8 @@ fn integration_test(
         "symbol-version-symver-error.c",
         "args-precedence.c",
         "entry-in-shared.c",
-        "alignment.c"
+        "alignment.c",
+        "gdb-index.c"
     )]
     program_name: &'static str,
     #[allow(unused_variables)] setup_symlink: (),
