@@ -85,9 +85,10 @@ impl StringMergeSectionSlot {
 
 /// Extra stuff that we don't want to put in `StringMergeSectionSlot` because like all section
 /// slots, we want to keep it as small as possible.
-#[derive(Debug)]
+#[derive(derive_more::Debug)]
 pub(crate) struct StringMergeSectionExtra<'data> {
     pub(crate) index: object::SectionIndex,
+    #[debug("{:?}", String::from_utf8_lossy(section_data))]
     pub(crate) section_data: &'data [u8],
 }
 
