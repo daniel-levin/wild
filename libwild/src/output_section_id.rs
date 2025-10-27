@@ -327,6 +327,38 @@ impl<'data> OutputSections<'data> {
         }
     }
 
+    /// Useful for print-statement debugging; otherwise defeats the purpose of [OutputSectionMap]
+    #[allow(dead_code)]
+    pub(crate) fn stitch<T: Clone>(&self, other: &OutputSectionMap<T>) -> HashMap<String, T> {
+        let mut map = HashMap::new();
+
+        for (osid, info) in self.ids_with_info() {
+            match info.kind {
+                SectionKind::Primary(name) => {
+                    map.insert(
+                        String::from_utf8_lossy(name.0).to_string(),
+                        other.get(osid).clone(),
+                    );
+                }
+                SectionKind::Secondary(primary_osid) => {
+                    if let SectionKind::Primary(name) = self.section_infos.get(primary_osid).kind {
+                        map.insert(
+                            format!(
+                                "{} (secondary)",
+                                String::from_utf8_lossy(name.0).to_string()
+                            ),
+                            other.get(osid).clone(),
+                        );
+                    } else {
+                        panic!("bug");
+                    }
+                }
+            }
+        }
+
+        map
+    }
+
     /// Returns whether we should include the specified section in a program segment with the
     /// supplied properties.
     fn should_include_in_segment(
