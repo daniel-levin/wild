@@ -3795,6 +3795,10 @@ impl<'data> EpilogueLayoutState<'data> {
             self.verdefs.replace(verdefs);
         }
 
+        if symbol_db.args.generate_gdb_index {
+            common.allocate(part_id::GDB_INDEX, 0);
+        }
+
         Ok(())
     }
 
