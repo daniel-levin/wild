@@ -56,6 +56,7 @@ perf-event = { workspace = true }
 
 [dev-dependencies]
 ar = { workspace = true }
+criterion = { workspace = true }
 tempfile = { workspace = true }
 
 [features]
@@ -67,3 +68,7 @@ wip = []
 
 [lints]
 workspace = true
+
+[[bench]]
+name = "internal"
+harness = false

@@ -24,12 +24,12 @@ use linker_utils::elf::shf;
 use linker_utils::elf::sht;
 use std::mem::replace;
 
-pub(crate) struct LayoutRules<'data> {
-    pub(crate) section_rules: SectionRules<'data>,
+pub struct LayoutRules<'data> {
+    pub section_rules: SectionRules<'data>,
 }
 
 #[derive(Default)]
-pub(crate) struct LayoutRulesBuilder<'data> {
+pub struct LayoutRulesBuilder<'data> {
     rules: Vec<SectionRule<'data>>,
 }
 
@@ -44,14 +44,14 @@ pub(crate) enum SectionKind<'data> {
 }
 
 /// Rules governing how input sections should be mapped to output sections.
-pub(crate) struct SectionRules<'data> {
+pub struct SectionRules<'data> {
     /// Rules by the hash of the first 4 bytes of the name.
     rules: HashTable<SectionRule<'data>>,
 }
 
 /// A rule for determining what should be done with some input sections.
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct SectionRule<'data> {
+pub struct SectionRule<'data> {
     /// The name that the section needs to have in order for this rule to match, or if `is_prefix`
     /// is true, then the prefix of the section name required.
     name: &'data [u8],
@@ -65,7 +65,7 @@ pub(crate) struct SectionRule<'data> {
 
 /// What should be done with a particular input section.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum SectionRuleOutcome {
+pub enum SectionRuleOutcome {
     Section(SectionOutputInfo),
     Discard,
     Custom,
@@ -76,7 +76,7 @@ pub(crate) enum SectionRuleOutcome {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct SectionOutputInfo {
+pub struct SectionOutputInfo {
     pub(crate) section_id: OutputSectionId,
     pub(crate) must_keep: bool,
 }
@@ -194,7 +194,7 @@ impl<'data> LayoutRulesBuilder<'data> {
         })
     }
 
-    pub(crate) fn build(mut self) -> LayoutRules<'data> {
+    pub fn build(mut self) -> LayoutRules<'data> {
         let section_rules = if self.rules.is_empty() {
             SectionRules::from_rules(BUILT_IN_RULES)
         } else {
@@ -383,7 +383,7 @@ impl<'data> SectionRules<'data> {
     }
 
     #[inline(always)]
-    pub(crate) fn lookup(
+    pub fn lookup(
         &self,
         section_name: &[u8],
         section_flags: SectionFlags,
