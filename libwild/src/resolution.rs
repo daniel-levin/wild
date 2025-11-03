@@ -851,7 +851,7 @@ fn resolve_sections_for_object<'data>(
                     return Ok(SectionSlot::NoteGnuProperty(input_section_index));
                 }
                 SectionRuleOutcome::Debug => {
-                    if args.strip_debug && !section_flags.contains(shf::ALLOC) {
+                    if args.strip_debug() && !section_flags.contains(shf::ALLOC) {
                         return Ok(SectionSlot::Discard);
                     }
 
@@ -1007,7 +1007,10 @@ fn resolve_symbol<'data, 'scope>(
     assert!(!local_symbol.is_definition(LittleEndian));
     let prehashed_name = PreHashedSymbolName::from_raw(&name_info);
 
-    match resources.symbol_db.get(&prehashed_name) {
+    // Only default-visibility symbols can reference symbols from shared objects.
+    let allow_dynamic = local_symbol.st_visibility() == object::elf::STV_DEFAULT;
+
+    match resources.symbol_db.get(&prehashed_name, allow_dynamic) {
         Some(symbol_id) => {
             *definition_out = symbol_id;
             let symbol_file_id = resources.symbol_db.file_id_for_symbol(symbol_id);

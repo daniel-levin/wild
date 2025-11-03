@@ -1176,7 +1176,7 @@ fn write_object<A: Arch>(
         }
     }
 
-    if !layout.args().strip_all {
+    if !layout.args().strip_all() {
         write_symbols(object, &mut table_writer.debug_symbol_writer, layout)?;
     }
     Ok(())
@@ -1912,7 +1912,7 @@ fn apply_relocation<'data, A: Arch>(
     }
 
     let (resolution, symbol_index, local_symbol_id) = get_resolution(rel, object_layout, layout)?;
-    let flags = resolution.flags;
+    let flags = layout.flags_for_symbol(local_symbol_id);
     let mut next_modifier = RelocationModifier::Normal;
     let rel_info;
     let output_kind = layout.args().output_kind();
@@ -2424,7 +2424,7 @@ fn write_prelude<A: Arch>(
 
     write_plt_got_entries::<A>(prelude, layout, table_writer)?;
 
-    if !layout.args().strip_all {
+    if !layout.args().strip_all() {
         write_symbol_table_entries(prelude, &mut table_writer.debug_symbol_writer, layout)?;
     }
 
@@ -2710,7 +2710,7 @@ fn write_epilogue<A: Arch>(
 
     write_internal_symbols_plt_got_entries::<A>(&epilogue.internal_symbols, table_writer, layout)?;
 
-    if !layout.args().strip_all {
+    if !layout.args().strip_all() {
         write_internal_symbols(
             &epilogue.internal_symbols,
             layout,

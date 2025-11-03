@@ -848,7 +848,6 @@ fn parse_configs(src_filename: &Path, default_config: &Config) -> Result<Vec<Con
                         .parse()
                         .with_context(|| format!("Invalid Mode `{arg}`"))?;
                     if mode == Mode::Dynamic {
-                        config.should_run = false;
                         config.assertions.expect_dynamic = true;
                     }
                     config.linker_driver.direct_mut()?.mode = mode;
@@ -2880,6 +2879,7 @@ fn integration_test(
         "custom-note.s",
         "eh_frame.c",
         "symbol-priority.c",
+        "hidden-ref.c",
         "trivial_asm.s",
         "non-alloc.s",
         "gnu-unique.c",

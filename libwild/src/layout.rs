@@ -14,6 +14,7 @@ use crate::arch::Relaxation as _;
 use crate::args::Args;
 use crate::args::BuildIdOption;
 use crate::args::OutputKind;
+use crate::args::Strip;
 use crate::bail;
 use crate::debug_assert_bail;
 use crate::diagnostics::SymbolInfoPrinter;
@@ -2843,8 +2844,10 @@ fn process_relocation<A: Arch>(
     let mut next_modifier = RelocationModifier::Normal;
     if let Some(local_sym_index) = rel.symbol() {
         let symbol_db = resources.symbol_db;
-        let symbol_id = symbol_db.definition(object.symbol_id_range.input_to_id(local_sym_index));
-        let local_flags = resources.local_flags_for_symbol(symbol_id);
+        let local_symbol_id = object.symbol_id_range.input_to_id(local_sym_index);
+        let symbol_id = symbol_db.definition(local_symbol_id);
+        let mut flags = resources.local_flags_for_symbol(symbol_id);
+        flags.merge(resources.local_flags_for_symbol(local_symbol_id));
         let rel_offset = rel.r_offset;
         let r_type = rel.r_type;
         let section_flags = SectionFlags::from_header(section);
@@ -2853,7 +2856,7 @@ fn process_relocation<A: Arch>(
             r_type,
             object.object.raw_section_data(section)?,
             rel_offset,
-            local_flags,
+            flags,
             args.output_kind(),
             section_flags,
             true,
@@ -2881,14 +2884,14 @@ fn process_relocation<A: Arch>(
             if needs_tlsld(rel_info.kind) && !resources.uses_tlsld.load(atomic::Ordering::Relaxed) {
                 resources.uses_tlsld.store(true, atomic::Ordering::Relaxed);
             }
-        } else if flags_to_add.needs_direct() && local_flags.is_interposable() {
+        } else if flags_to_add.needs_direct() && flags.is_interposable() {
             if section_is_writable {
                 common.allocate(part_id::RELA_DYN_GENERAL, elf::RELA_ENTRY_SIZE);
-            } else if local_flags.is_function() {
+            } else if flags.is_function() {
                 // Create a PLT entry for the function and refer to that instead.
                 flags_to_add.remove(ValueFlags::DIRECT);
                 flags_to_add |= ValueFlags::PLT | ValueFlags::GOT;
-            } else if !local_flags.is_absolute() {
+            } else if !flags.is_absolute() {
                 match args.copy_relocations {
                     crate::args::CopyRelocations::Allowed => {
                         flags_to_add |= ValueFlags::COPY_RELOCATION;
@@ -2907,7 +2910,7 @@ fn process_relocation<A: Arch>(
             }
         } else if args.is_relocatable()
             && rel_info.kind == RelocationKind::Absolute
-            && (local_flags.is_address() | local_flags.is_ifunc())
+            && (flags.is_address() | flags.is_ifunc())
         {
             if section_is_writable {
                 common.allocate(part_id::RELA_DYN_RELATIVE, elf::RELA_ENTRY_SIZE);
@@ -2933,7 +2936,7 @@ fn process_relocation<A: Arch>(
                 object.object.symbol(local_sym_index)?,
                 object.file_id,
                 symbol_db.file_id_for_symbol(symbol_id),
-                local_flags,
+                flags,
                 args,
             ) {
                 let symbol_name = symbol_db.symbol_name_for_display(symbol_id);
@@ -3102,7 +3105,7 @@ impl<'data> PreludeLayoutState<'data> {
 
         // The first entry in the symbol table must be null. Similarly, the first string in the
         // strings table must be empty.
-        if !resources.symbol_db.args.strip_all {
+        if !resources.symbol_db.args.strip_all() {
             common.allocate(part_id::SYMTAB_LOCAL, size_of::<elf::SymtabEntry>() as u64);
             common.allocate(part_id::STRTAB, 1);
         }
@@ -3240,7 +3243,7 @@ impl<'data> PreludeLayoutState<'data> {
         symbol_db: &SymbolDb<'_>,
         extra_sizes: &mut OutputSectionPartMap<u64>,
     ) -> Result<(), Error> {
-        if symbol_db.args.strip_all {
+        if symbol_db.args.strip_all() {
             return Ok(());
         }
 
@@ -3694,7 +3697,7 @@ impl<'data> EpilogueLayoutState<'data> {
         symbol_db: &SymbolDb<'data>,
         per_symbol_flags: &AtomicPerSymbolFlags,
     ) -> Result {
-        if !symbol_db.args.strip_all {
+        if !symbol_db.args.strip_all() {
             self.internal_symbols.allocate_symbol_table_sizes(
                 &mut common.mem_sizes,
                 symbol_db,
@@ -4316,7 +4319,7 @@ impl<'data> ObjectLayoutState<'data> {
         per_symbol_flags: &AtomicPerSymbolFlags,
     ) {
         common.mem_sizes.resize(output_sections.num_parts());
-        if !symbol_db.args.strip_all {
+        if !symbol_db.args.strip_all() {
             self.allocate_symtab_space(common, symbol_db, per_symbol_flags);
         }
         let output_kind = symbol_db.args.output_kind();
@@ -4659,6 +4662,12 @@ impl<'data> SymbolCopyInfo<'data> {
         if name.is_empty()
             || (sym.is_local() && name.starts_with(b".L"))
             || is_mapping_symbol_name(name)
+        {
+            return None;
+        }
+
+        if let Strip::Retain(retain) = &symbol_db.args.strip
+            && !retain.contains(name)
         {
             return None;
         }
@@ -5566,7 +5575,7 @@ impl<'data> DynamicLayoutState<'data> {
             let st_size = symbol.st_size(LittleEndian);
             common.allocate(
                 output_section_id::BSS.part_id_with_alignment(alignment),
-                st_size,
+                alignment.align_up(st_size),
             );
 
             // Allocate space required for the copy relocation itself.
@@ -5861,7 +5870,7 @@ fn assign_copy_relocation_address(
     let alignment = Alignment::new(file.section_alignment(section)?)?;
     let bss = memory_offsets.get_mut(output_section_id::BSS.part_id_with_alignment(alignment));
     let a = *bss;
-    *bss += local_symbol.st_size(LittleEndian);
+    *bss += alignment.align_up(local_symbol.st_size(LittleEndian));
     Ok(a)
 }
 
