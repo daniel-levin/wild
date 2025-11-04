@@ -212,7 +212,12 @@ pub fn compute<'data, A: Arch>(
         symbol_db.args,
     );
     let section_layouts = layout_sections(&output_sections, &section_part_layouts);
+
+    dbg!(output_sections.stitch(&section_layouts));
+
     output.set_size(compute_total_file_size(&section_layouts));
+
+    dbg!(output_sections.stitch(&section_layouts));
 
     let Some(FileLayoutState::Prelude(internal)) =
         &group_states.first().and_then(|g| g.files.first())

@@ -41,6 +41,9 @@ pub(crate) enum SectionKind<'data> {
     /// This is a secondary section that will be merged into the primary. The ID of the primary is
     /// supplied.
     Secondary(OutputSectionId),
+
+    /// A section not present in any input, which is wholly synthesized in the linker.
+    Synthetic,
 }
 
 /// Rules governing how input sections should be mapped to output sections.

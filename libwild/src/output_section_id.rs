@@ -323,7 +323,7 @@ impl<'data> OutputSections<'data> {
     /// None if the supplied section is itself a primary section.
     pub(crate) fn merge_target(&self, section_id: OutputSectionId) -> Option<OutputSectionId> {
         match self.output_info(section_id).kind {
-            SectionKind::Primary(_) => None,
+            SectionKind::Primary(_) | SectionKind::Synthetic => None,
             SectionKind::Secondary(primary_id) => Some(primary_id),
         }
     }
@@ -354,6 +354,7 @@ impl<'data> OutputSections<'data> {
                         panic!("bug");
                     }
                 }
+                SectionKind::Synthetic => {}
             }
         }
 
@@ -630,9 +631,9 @@ const SECTION_DEFINITIONS: [BuiltInSectionDetails; NUM_BUILT_IN_SECTIONS] = [
         ..DEFAULT_DEFS
     },
     BuiltInSectionDetails {
-        kind: SectionKind::Primary(SectionName(GDB_INDEX_SECTION_NAME)),
+        kind: SectionKind::Synthetic,
+        //kind: SectionKind::Primary(SectionName(GDB_INDEX_SECTION_NAME)),
         ty: sht::PROGBITS,
-        keep_if_empty: true,
         ..DEFAULT_DEFS
     },
     // Start of regular sections
@@ -1082,6 +1083,7 @@ impl<'data> OutputSections<'data> {
         match self.output_info(section_id).kind {
             SectionKind::Primary(section_name) => Some(section_name),
             SectionKind::Secondary(_) => None,
+            SectionKind::Synthetic => panic!("bad"),
         }
     }
 
@@ -1092,6 +1094,9 @@ impl<'data> OutputSections<'data> {
             }
             SectionKind::Secondary(primary_id) => {
                 format!("`{}` (secondary)", self.display_name(primary_id))
+            }
+            SectionKind::Synthetic => {
+                format!("synthetic")
             }
         }
     }
@@ -1239,6 +1244,7 @@ impl Display for SectionKind<'_> {
         match self {
             SectionKind::Primary(section_name) => write!(f, "{section_name}"),
             SectionKind::Secondary(primary_id) => write!(f, "Secondary to {primary_id}"),
+            SectionKind::Synthetic => write!(f, "synthetic"),
         }
     }
 }
@@ -1296,6 +1302,7 @@ fn test_constant_ids() {
                 assert_eq!(section_name.to_string(), String::from_utf8_lossy(name));
             }
             SectionKind::Secondary(_) => assert!(name.is_empty()),
+            _ => {}
         }
     }
     assert_eq!(NUM_BUILT_IN_SECTIONS, check.len());
