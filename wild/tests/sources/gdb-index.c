@@ -20,5 +20,6 @@
 //#DiffIgnore:section.got.plt.entsize
 //#DiffIgnore:section.rodata
 //#DiffIgnore:section.gnu.version_r.alignment
+//#Contains:gdb_index
 
 int main() { return 42; }

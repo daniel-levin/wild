@@ -3346,13 +3346,6 @@ impl<'data> PreludeLayoutState<'data> {
             }
         }
 
-        for (osid, info) in output_sections.ids_with_info() {
-            if *keep_sections.get(osid) {
-            } else {
-                tracing::trace!("discarding section {:#?}", info);
-            }
-        }
-
         let num_sections = keep_sections.values_iter().filter(|p| **p).count();
 
         // Compute output indexes of each section.
@@ -3796,10 +3789,6 @@ impl<'data> EpilogueLayoutState<'data> {
                     .into(),
             );
             self.verdefs.replace(verdefs);
-        }
-
-        if symbol_db.args.generate_gdb_index {
-            common.allocate(part_id::GDB_INDEX, 0);
         }
 
         Ok(())

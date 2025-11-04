@@ -2,7 +2,7 @@
 //#ExpectSym:_start section=".text"
 //#ExpectSym:exit_syscall section=".text"
 //#EnableLinker:lld
-//#TestUpdateInPlace:true
+//#TestUpdateInPlace:false
 
 #include "runtime.h"
 

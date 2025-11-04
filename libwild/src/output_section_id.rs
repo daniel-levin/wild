@@ -632,6 +632,7 @@ const SECTION_DEFINITIONS: [BuiltInSectionDetails; NUM_BUILT_IN_SECTIONS] = [
     BuiltInSectionDetails {
         kind: SectionKind::Primary(SectionName(GDB_INDEX_SECTION_NAME)),
         ty: sht::PROGBITS,
+        keep_if_empty: true,
         ..DEFAULT_DEFS
     },
     // Start of regular sections
@@ -896,6 +897,7 @@ impl CustomSectionIds {
         builder.add_section(EH_FRAME_HDR);
         builder.add_section(EH_FRAME);
         builder.add_section(GCC_EXCEPT_TABLE);
+        builder.add_section(GDB_INDEX);
         builder.add_sections(&self.ro);
 
         builder.add_section(PLT_GOT);
